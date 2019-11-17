@@ -38,3 +38,8 @@ while len(far_sources) != 3:
 		print('Weight edge 0-1 : ', E[0][1]['weight'])
 		print('Weight edge 1-2: ', E[1][2]['weight'])
 		print('\n')
+
+print(test_bfs.calculate_threshold(0))
+print(test_bfs.calculate_threshold(1))
+print(test_bfs.calculate_threshold(2))
+

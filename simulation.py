@@ -38,3 +38,10 @@ class Simulation:
 					queue.append((child, neighbors(child), curr_weight))
 			except StopIteration:
 				queue.popleft()
+
+	def calculate_threshold(self, source):
+		num_neighbors = self.G.neighbors(source)
+		return len(list(num_neighbors)) * 10
+
+	def add_probabilities(self, start, step):
+		pass
