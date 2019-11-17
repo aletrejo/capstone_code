@@ -14,7 +14,7 @@ class Simulation:
 		random_node = random.randint(0, total_nodes - 1)
 		return random_node
 
-	def add_weight(self, source, audience_type):
+	def assign_weight(self, source, audience_type):
 		if audience_type == 'near':
 			weight = 2 ** 7 #hard coded to be the longest shortest path of the FB graph
 		else:
@@ -43,5 +43,20 @@ class Simulation:
 		num_neighbors = self.G.neighbors(source)
 		return len(list(num_neighbors)) * 10
 
-	def add_probabilities(self, start, step):
-		pass
+	def assign_probabilities(self, source, starting_probability, step):
+		probability = starting_probability
+		neighbors = self.G.neighbors
+		visited = set([source])
+		queue = deque([(source, neighbors(source), probability)])
+		
+		while queue:
+			parent, children, curr_probability = queue[0]
+			try:
+				child = next(children)
+				if child not in visited:
+					self.G.nodes[child]['probability'] = curr_probability
+					new_probability = curr_probability + step
+					visited.add(child)
+					queue.append((child, neighbors(child), new_probability))
+			except StopIteration:
+				queue.popleft()

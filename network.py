@@ -18,7 +18,7 @@ print(nx.info(G_fb))
 # Assign weight
 network = simulation.Simulation(G_fb)
 node = network.pick_random_node()
-network.add_weight(node, 'near')
+network.assign_weight(node, 'near')
 
 # Set Edge Color based on weight
 # Taken from https://stackoverflow.com/questions/43644210/python-networkx-add-weights-to-edges-by-frequency-of-edge-occurance
