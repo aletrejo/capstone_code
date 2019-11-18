@@ -7,12 +7,15 @@ class Simulation:
 
 	def __init__(self, G):
 		self.G = G
+		self.threshold = 0
+		self.value = 0
 
 
 	def pick_random_node(self):
 		total_nodes = nx.number_of_nodes(self.G)
 		random_node = random.randint(0, total_nodes - 1)
 		return random_node
+
 
 	def assign_weight(self, source, audience_type):
 		if audience_type == 'near':
@@ -39,9 +42,6 @@ class Simulation:
 			except StopIteration:
 				queue.popleft()
 
-	def calculate_threshold(self, source):
-		num_neighbors = self.G.neighbors(source)
-		return len(list(num_neighbors)) * 10
 
 	def assign_probabilities(self, source, starting_probability, step):
 		probability = starting_probability
@@ -60,3 +60,12 @@ class Simulation:
 					queue.append((child, neighbors(child), new_probability))
 			except StopIteration:
 				queue.popleft()
+
+
+	def calculate_threshold(self, source):
+		num_neighbors = self.G.neighbors(source)
+		return len(list(num_neighbors)) * 10
+
+
+	def remains_online(self):
+		return True if self.threshold >= self.value else False
