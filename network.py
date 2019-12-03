@@ -4,7 +4,7 @@ from matplotlib import cm
 import matplotlib.pyplot as plt
 import simulation
 from collections import defaultdict, deque
-
+import salabim as sim
 
 G_fb = nx.read_edgelist("facebook_combined.txt", create_using = nx.Graph(), nodetype=int)
 print(nx.info(G_fb))

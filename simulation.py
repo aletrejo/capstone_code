@@ -2,14 +2,32 @@ import networkx as nx
 import random
 from collections import defaultdict, deque
 
+class Post:
 
-class Simulation:
-
-	def __init__(self, G):
+	def __init__(self, G, starting_probability, threshold_percentage):
 		self.G = G
+		self.starting_probability = starting_probability
+		self.threshold_percentage = threshold_percentage
 		self.threshold = 0
-		self.value = 0
+		self.interest = 0
+		self.tu = 0
 
+	def run(self, audience, step):
+		# Add weight and probabilities
+		source = self.pick_random_node()
+		print('Source node is: ', source)
+		self.assign_weight(source, audience, step)
+		self.assign_probabilities(source, step)
+		# Establish threshold value
+		self.threshold = self.calculate_threshold(source)
+		print('Threshold value is: ', self.threshold)
+		while True:
+			self.interest = 0
+			self.activate_nodes(source)
+			self.tu+= 1
+			if not self.remains_online():
+				break
+		print('Total runs: ', self.tu)
 
 	def pick_random_node(self):
 		total_nodes = nx.number_of_nodes(self.G)
@@ -17,7 +35,7 @@ class Simulation:
 		return random_node
 
 
-	def assign_weight(self, source, audience_type):
+	def assign_weight(self, source, audience_type, step):
 		if audience_type == 'near':
 			weight = 2 ** 7 #hard coded to be the longest shortest path of the FB graph
 		else:
@@ -34,17 +52,17 @@ class Simulation:
 				if child not in visited:
 					self.G[parent][child]['weight'] = curr_weight
 					if audience_type == 'near':
-						curr_weight = curr_weight // 2
+						curr_weight = curr_weight * step
 					else:
-						curr_weight = curr_weight * 2 
+						curr_weight = curr_weight * (1 + step) 
 					visited.add(child)
 					queue.append((child, neighbors(child), curr_weight))
 			except StopIteration:
 				queue.popleft()
 
 
-	def assign_probabilities(self, source, starting_probability, step):
-		probability = starting_probability
+	def assign_probabilities(self, source, step):
+		probability = self.starting_probability
 		neighbors = self.G.neighbors
 		visited = set([source])
 		queue = deque([(source, neighbors(source), probability)])
@@ -55,17 +73,40 @@ class Simulation:
 				child = next(children)
 				if child not in visited:
 					self.G.nodes[child]['probability'] = curr_probability
-					new_probability = curr_probability + step
+					new_probability = curr_probability * step
 					visited.add(child)
 					queue.append((child, neighbors(child), new_probability))
 			except StopIteration:
 				queue.popleft()
 
 
+	def activate_nodes(self, source):
+		neighbors = self.G.neighbors
+		visited = set([source])
+		queue = deque([(source, neighbors(source))])
+		
+		while queue:
+			parent, children = queue[0]
+			try:
+				child = next(children)
+				if child not in visited:
+					probability = self.G.nodes[child]['probability'] * 100
+					num_picked = random.randint(1, 100)
+					if num_picked <= probability:
+						self.interest += self.G[parent][child]['weight']
+					visited.add(child)
+					queue.append((child, neighbors(child)))
+			except StopIteration:
+				queue.popleft()
+
+
 	def calculate_threshold(self, source):
-		num_neighbors = self.G.neighbors(source)
-		return len(list(num_neighbors)) * 10
+		threshold_value = 0
+		neighbors = self.G.neighbors(source)
+		for neighbor in neighbors:
+			threshold_value += self.G[source][neighbor]['weight']
+		return threshold_value * self.threshold_percentage
 
 
 	def remains_online(self):
-		return True if self.threshold >= self.value else False
+		return True if self.interest >= self.threshold else False
